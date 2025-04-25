@@ -1,0 +1,174 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Gestion Énergie Domestique</title>
+  <link rel="stylesheet" href="style.css"/>
+  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+</head>
+<body>
+  <nav>
+    <div class="logo">Domowatt</div>
+    <ul>
+      <li><a href="#">Accueil</a></li>
+      <li><a href="#">Statistiques</a></li>
+      <li><a href="#">Paramètres</a></li>
+    </ul>
+  </nav>
+
+  <header>
+    <h1>Suivi de la Consommation</h1>
+    <p>Visualisez la consommation en temps réel de vos équipements</p>
+  </header>
+
+  <main>
+    <section class="equipments" id="equipments-container"></section>
+
+    <section class="chart">
+      <h2>Graphique de Consommation</h2>
+      <div class="chart-box">
+        <canvas id="consumptionChart"></canvas>
+      </div>
+    </section>
+  </main>
+
+  <div class="modal" id="controlModal">
+    <div class="modal-content">
+      <h2 id="modalTitle">Contrôle de l'équipement</h2>
+      <button onclick="controlDevice(currentDeviceId, 'on')">Allumer</button>
+      <button onclick="controlDevice(currentDeviceId, 'off')">Éteindre</button>
+    </div>
+  </div>
+
+  <footer>
+    <p>&copy; 2025 Domowatt | powered by Gedeon</p>
+  </footer>
+
+  <script type="module">
+
+      // Import the functions you need from the SDKs you need
+      import { initializeApp } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-app.js";
+      import { getAnalytics } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-analytics.js";
+      // TODO: Add SDKs for Firebase products that you want to use
+      // https://firebase.google.com/docs/web/setup#available-libraries
+    
+      // Your web app's Firebase configuration
+      // For Firebase JS SDK v7.20.0 and later, measurementId is optional
+      const firebaseConfig = {
+        apiKey: "AIzaSyCpabKLZo0XOM3j8K-eMI6TLAN8-bHXY9I",
+        authDomain: "domw-9ff86.firebaseapp.com",
+        databaseURL: "https://domw-9ff86-default-rtdb.europe-west1.firebasedatabase.app",
+        projectId: "domw-9ff86",
+        storageBucket: "domw-9ff86.firebasestorage.app",
+        messagingSenderId: "612935167106",
+        appId: "1:612935167106:web:fa2d95b0683cbf3ec7989b",
+        measurementId: "G-CMLJHJ0KV6"
+      };
+    
+      // Initialize Firebase
+      const app = initializeApp(firebaseConfig);
+      const analytics = getAnalytics(app);
+
+    const equipmentList = [
+      { id: 'frigo', name: 'Réfrigérateur' },
+      { id: 'clim', name: 'Climatiseur' },
+      { id: 'tv', name: 'TV' },
+      { id: 'machine', name: 'Machine à laver' },
+      { id: 'ordi', name: 'Ordinateur' },
+      { id: 'pompe', name: 'Pompe à eau' },
+      { id: 'micro', name: 'Micro-ondes' }
+    ];
+
+    const container = document.getElementById('equipments-container');
+    let currentDeviceId = '';
+
+    equipmentList.forEach(equip => {
+      const card = document.createElement('div');
+      card.className = 'card';
+      card.id = `card-${equip.id}`;
+      card.innerHTML = `
+        <h2>${equip.name}</h2>
+        <p id="power-${equip.id}">Consommation : -- W</p>
+        <div class="progress-bar">
+          <div class="fill" id="fill-${equip.id}" style="width: 0%"><span id="percent-${equip.id}">0%</span></div>
+        </div>
+      `;
+      card.onclick = () => {
+        currentDeviceId = equip.id;
+        document.getElementById('modalTitle').textContent = `Contrôle de ${equip.name}`;
+        document.getElementById('controlModal').style.display = 'flex';
+      };
+      container.appendChild(card);
+
+      // 🔁 Écoute en temps réel sur Firebase
+      const powerRef = ref(db, `equipements/${equip.id}/puissance`);
+      const percentRef = ref(db, `equipements/${equip.id}/pourcentage`);
+
+      onValue(powerRef, snapshot => {
+        const value = snapshot.val();
+        if (value !== null) {
+          document.getElementById(`power-${equip.id}`).textContent = `Consommation : ${value} W`;
+        }
+      });
+
+      onValue(percentRef, snapshot => {
+        const value = snapshot.val();
+        if (value !== null) {
+          const fill = document.getElementById(`fill-${equip.id}`);
+          const percentText = document.getElementById(`percent-${equip.id}`);
+          fill.style.width = `${value}%`;
+          percentText.textContent = `${value}%`;
+        }
+      });
+    });
+
+    window.onclick = function(event) {
+      const modal = document.getElementById('controlModal');
+      if (event.target == modal) {
+        modal.style.display = "none";
+      }
+    };
+
+    function controlDevice(deviceId, action) {
+      set(ref(db, `equipements/${deviceId}/etat`), action)
+        .then(() => alert(`${deviceId} ${action === 'on' ? 'allumé' : 'éteint'} !`))
+        .catch(err => alert("Erreur Firebase : " + err.message));
+    }
+
+    const ctx = document.getElementById('consumptionChart').getContext('2d');
+    const consumptionChart = new Chart(ctx, {
+      type: 'line',
+      data: {
+        labels: ['00h', '03h', '06h', '09h', '12h', '15h', '18h', '21h'],
+        datasets: [{
+          label: 'Consommation (Wh)',
+          data: [100, 120, 90, 130, 180, 200, 170, 140],
+          backgroundColor: 'rgba(14, 121, 178, 0.2)',
+          borderColor: '#0e79b2',
+          borderWidth: 2,
+          tension: 0.3,
+          fill: true,
+          pointRadius: 4,
+          pointBackgroundColor: '#0e79b2'
+        }]
+      },
+      options: {
+        responsive: true,
+        scales: {
+          y: {
+            beginAtZero: true,
+            title: { display: true, text: 'Puissance (Wh)', color: '#444' }
+          },
+          x: {
+            title: { display: true, text: 'Heures', color: '#444' }
+          }
+        },
+        plugins: {
+          legend: { display: true, position: 'bottom' }
+        }
+      }
+    });
+  </script>
+</body>
+</html>
