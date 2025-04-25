@@ -65,22 +65,12 @@ const utilisateurs = {
         document.getElementById("error").textContent = "Identifiants ou Mot de passe incorrects !";
     }
   }
+document.addEventListener("keydown", function(event) {
+  if (event.key === "Enter") {
+    login();
+  }
+});
 
-
-   /* function login() {
-        const user = document.getElementById("username").value;
-        const pass = document.getElementById("password").value;
-  
-        // Identifiants définis en dur (tu peux changer ça)
-        const validUser = "admin";
-        const validPass = "1234";
-  
-        if (user === validUser && pass === validPass) {
-          window.location.href = "index.html";  // redirection vers la page principale
-        } else {
-          document.getElementById("error").textContent = "Identifiants incorrects !";
-        }
-      }*/
   </script>
 </body>
 </html>
