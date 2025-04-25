@@ -46,29 +46,22 @@
   </footer>
 
   <script type="module">
+    import { initializeApp } from "https://www.gstatic.com/firebasejs/11.6.0/firebase-app.js";
+    import { getDatabase, ref, onValue, set } from "https://www.gstatic.com/firebasejs/11.6.0/firebase-database.js";
 
-      // Import the functions you need from the SDKs you need
-      import { initializeApp } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-app.js";
-      import { getAnalytics } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-analytics.js";
-      // TODO: Add SDKs for Firebase products that you want to use
-      // https://firebase.google.com/docs/web/setup#available-libraries
-    
-      // Your web app's Firebase configuration
-      // For Firebase JS SDK v7.20.0 and later, measurementId is optional
-      const firebaseConfig = {
-        apiKey: "AIzaSyCpabKLZo0XOM3j8K-eMI6TLAN8-bHXY9I",
-        authDomain: "domw-9ff86.firebaseapp.com",
-        databaseURL: "https://domw-9ff86-default-rtdb.europe-west1.firebasedatabase.app",
-        projectId: "domw-9ff86",
-        storageBucket: "domw-9ff86.firebasestorage.app",
-        messagingSenderId: "612935167106",
-        appId: "1:612935167106:web:fa2d95b0683cbf3ec7989b",
-        measurementId: "G-CMLJHJ0KV6"
-      };
-    
-      // Initialize Firebase
-      const app = initializeApp(firebaseConfig);
-      const analytics = getAnalytics(app);
+    const firebaseConfig = {
+      apiKey: "AIzaSyBaHWtX8hgJGfa9YPqWQmeGrksu5rWoizQ",
+      authDomain: "domowatt-f6561.firebaseapp.com",
+      databaseURL: "https://domowatt-f6561-default-rtdb.europe-west1.firebasedatabase.app",
+      projectId: "domowatt-f6561",
+      storageBucket: "domowatt-f6561.appspot.com",
+      messagingSenderId: "969009965435",
+      appId: "1:969009965435:web:482c52f4e2e4f3a6c275de",
+      measurementId: "G-7PNPZ7P2LM"
+    };
+
+    const app = initializeApp(firebaseConfig);
+    const db = getDatabase(app);
 
     const equipmentList = [
       { id: 'frigo', name: 'Réfrigérateur' },
